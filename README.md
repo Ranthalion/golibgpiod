@@ -1,5 +1,5 @@
 # golibgpiod
-========
+
 libgpiod ported to go
 
 libgpiod

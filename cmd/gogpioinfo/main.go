@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/ranthalion/golibgpiod"
 )
@@ -22,14 +23,70 @@ func main() {
 		return
 	} else {
 		for _, gpiochip := range golibgpiod.GetGpioChips() {
-			fmt.Println(fmt.Sprintf("%v [%v] (%v lines)", gpiochip.Name, gpiochip.Label, gpiochip.NumLines))
+			fmt.Println(gpiochip.Name, "-", gpiochip.NumLines, "lines:")
+			gpiochip.GetLines()
+			for _, line := range gpiochip.Lines {
+				name := strings.Trim(line.Name, string([]byte{0}))
+
+				if name == "" {
+					name = "unnamed"
+				} else {
+					name = fmt.Sprintf("\"%v\"", name)
+				}
+
+				consumer := strings.Trim(line.Consumer, string([]byte{0}))
+				if consumer == "" {
+					consumer = "unused"
+				} else {
+					consumer = fmt.Sprintf("\"%v\"", consumer)
+				}
+
+				direction := "output"
+
+				if line.Direction == golibgpiod.GPIOD_LINE_DIRECTION_INPUT {
+					direction = "input"
+				}
+
+				activeState := "active-low"
+				if line.ActiveState == golibgpiod.GPIOD_LINE_ACTIVE_STATE_HIGH {
+					activeState = "active-high"
+				}
+
+				flags := ""
+				if line.Used {
+					flags = "[used"
+				}
+				if line.OpenDrain {
+					if len(flags) == 0 {
+						flags = "["
+					} else {
+						flags += " "
+					}
+					flags += "open-drain"
+				}
+				if line.OpenSource {
+					if len(flags) == 0 {
+						flags = "["
+					} else {
+						flags += " "
+					}
+					flags += "open-source"
+				}
+
+				if len(flags) > 0 {
+					flags += "]"
+				}
+
+				fmt.Println(fmt.Sprintf("\tline %3v: %12v %12v %7v %12v %v", line.Offset, name, consumer, direction, activeState, flags))
+			}
+			gpiochip.Close()
 		}
 	}
 }
 
 func printHelp() {
-	fmt.Println("Usage: ", os.Args[0], "[OPTIONS]")
-	fmt.Println("List all GPIO chips, print their labels and number of GPIO lines.")
+	fmt.Println("Usage: ", os.Args[0], "[OPTIONS] <gpiochip1> ...")
+	fmt.Println("Print information about all lines of the specified GPIO chip(s) (or all gpiochips if none are specified).")
 	fmt.Println("")
 	fmt.Println("Options:")
 	fmt.Println("  -h:\tdisplay this message and exit")

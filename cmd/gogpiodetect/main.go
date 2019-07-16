@@ -23,6 +23,7 @@ func main() {
 	} else {
 		for _, gpiochip := range golibgpiod.GetGpioChips() {
 			fmt.Println(fmt.Sprintf("%v [%v] (%v lines)", gpiochip.Name, gpiochip.Label, gpiochip.NumLines))
+			gpiochip.Close()
 		}
 	}
 }

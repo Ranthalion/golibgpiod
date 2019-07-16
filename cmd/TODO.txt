@@ -1,0 +1,9 @@
+ X  1. gpiodetect
+      a. gogpiodetect should be in alpha order
+    2. gpioinfo
+        a. Implement gpiochip.GetLines()
+		b. Implement gpioLine.GetInfo()
+    3. gpiofind
+    4. gpioget
+    5. gpiomon
+    6. gpioset
